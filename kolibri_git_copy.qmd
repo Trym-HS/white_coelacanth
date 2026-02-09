@@ -88,36 +88,3 @@ Anova_test
 performance::check_model(h_bird_model)
 
 ```
-
-**Plotting and discussing results**
-
-```{r}
-
-#Making plot and testing how well code fits
-
-augment(h_bird_model, interval = "confidence") |> 
-  
-  ggplot(aes(x = Elev_Mid, y = Average_Mass)) +
-  geom_point(fill = "grey", alpha = 0.4) +
-  geom_ribbon(aes(ymin = .lower, ymax = .upper),
-            fill = "lightgreen",
-            alpha = 0.25) +
-  geom_line(aes(y = .fitted), colour = "forestgreen") +
-  labs(
-    x = "Mean Elevation (m)",
-    y = "Average Body Mass (g)",
-    title = "Relationship between mean body mass and elevation for tropical hummingbirds (Trochilidae)") +
-
-theme(
-  axis.title = element_text(face = "bold"),
-  plot.title = element_text(face = "bold", hjust =0.5)
-)
-
-confint(h_bird_model)
-
-#Made with general troubleshooting- and coding help from Phind Model 70B (all chunks)
-#Made with help from students Selma Berg Eriksen and Remi Bermingham
-
-```
-
-Tropical hummingbirds living in and adapted to higher elevations seem to grow somewhat larger than their low-living counterparts. Both Anova-testing and a general summary show that the data fit quite well overall, with some deviation of residuals (shown by "heavy tails" along line).
