@@ -1,0 +1,123 @@
+---
+title: "git_test_code"
+format: html
+---
+
+Copy of Assignment 3: 300B, Autumn 2025
+
+```{r}
+#| label: setup
+#| message: false
+
+```
+
+**Setting up packages and importing target .xlsx-file**
+
+```{r}
+#| label: package_act
+#| message: false
+#| warning: false
+#| 
+#Activating packages for assignment
+
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(readxl)
+library(here)
+library(performance)
+library(broom)
+```
+
+```{r}
+#| label: read-table
+#| message: false
+#| warning: false
+
+#Importing and reading the file #BIRDBASE v2025.1 Sekercioglu et al. Final.xlsx
+
+h_bird_data <- read_excel(here("A_3/BIRDBASE v2025.1 Sekercioglu et al. Final.xlsx"), sheet = "Data" , skip = 1)
+
+```
+
+**Performing calculations**
+
+```{r}
+#| label: data-calc
+#| message: false
+#| warning: false
+
+#Filtering, calculating and editing columns and data
+
+h_bird <- h_bird_data |>
+  filter(`Family HBW/BirdLife v9.1 (2024)` == "Trochilidae") |>
+  select(`Family HBW/BirdLife v9.1 (2024)`, LAT, `Average Mass`, NormMin, NormMax) |>
+  rename(Average_Mass = `Average Mass`) |>
+  mutate(
+    NormMin = case_when(
+      NormMin == "L" ~ 0,
+      TRUE ~ as.numeric(NormMin)
+    ),
+    NormMax = as.numeric(NormMax),
+    Elev_Mid = (as.numeric(NormMin) + as.numeric(NormMax)) / 2
+  ) |>
+  filter(LAT == 1)
+
+```
+
+**Modelling and Plotting**
+
+```{r}
+
+#Making model
+
+h_bird_model <- lm(Average_Mass ~ Elev_Mid , data = h_bird)
+
+
+summary(h_bird_model)
+
+```
+
+```{r}
+
+#Running Anova-test on model and checking performance
+
+Anova_test <- car::Anova(h_bird_model)
+Anova_test
+
+performance::check_model(h_bird_model)
+
+```
+
+**Plotting and discussing results**
+
+```{r}
+
+#Making plot and testing how well code fits
+
+augment(h_bird_model, interval = "confidence") |> 
+  
+  ggplot(aes(x = Elev_Mid, y = Average_Mass)) +
+  geom_point(fill = "grey", alpha = 0.4) +
+  geom_ribbon(aes(ymin = .lower, ymax = .upper),
+            fill = "lightgreen",
+            alpha = 0.25) +
+  geom_line(aes(y = .fitted), colour = "forestgreen") +
+  labs(
+    x = "Mean Elevation (m)",
+    y = "Average Body Mass (g)",
+    title = "Relationship between mean body mass and elevation for tropical hummingbirds (Trochilidae)") +
+
+theme(
+  axis.title = element_text(face = "bold"),
+  plot.title = element_text(face = "bold", hjust =0.5)
+)
+
+confint(h_bird_model)
+
+#Made with general troubleshooting- and coding help from Phind Model 70B (all chunks)
+#Made with help from students Selma Berg Eriksen and Remi Bermingham
+
+```
+
+Tropical hummingbirds living in and adapted to higher elevations seem to grow somewhat larger than their low-living counterparts. Both Anova-testing and a general summary show that the data fit quite well overall, with some deviation of residuals (shown by "heavy tails" along line).
