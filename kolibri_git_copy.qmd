@@ -27,6 +27,8 @@ library(readxl)
 library(here)
 library(performance)
 library(broom)
+library(glue)
+library(report)
 ```
 
 ```{r}
@@ -88,3 +90,11 @@ Anova_test
 performance::check_model(h_bird_model)
 
 ```
+
+```{glue}
+#| label: glueee
+#| output: asis
+Heyheyyy, tester dette hihi
+{report(h_bird_model)}
+```
+
